@@ -54,6 +54,8 @@ def get_selfie_count():
     recent_images = load_recent_images()
     return len(recent_images)
 
+
+
 def add_selfie_to_template(user_image, template_image, user_name):
     """Places the user's selfie inside the circular frame and adds the name."""
     
@@ -74,7 +76,7 @@ def add_selfie_to_template(user_image, template_image, user_name):
     
     # Calculate the center position for the circle
     circle_x = template_width // 2  # Center horizontally
-    circle_y = int(template_height * 0.77)  # Position at 70% from top
+    circle_y = int(template_height * 0.77)  # Position at 77% from top
     circle_r = int(template_width * 0.17)  # Slightly smaller radius
     
     # Calculate aspect ratio preserving dimensions for user image
@@ -128,41 +130,141 @@ def add_selfie_to_template(user_image, template_image, user_name):
     # Convert back to PIL format
     final_image = Image.fromarray(cv2.cvtColor(template_cv, cv2.COLOR_BGRA2RGBA))
     
-    # Add user name with optimized font loading
+    # ==== Add Centered Username ====
     draw = ImageDraw.Draw(final_image)
-    # try:
-    #     font = ImageFont.truetype("arial.ttf", 80)
-    # except:
-    #     font = ImageFont.load_default()
     
-    # # Center align the text
-    # text_width = draw.textlength(user_name, font=font)
-    # text_x = text_width
-    # text_y = y2 + 10
-    
-    # # Add text with yellow color
-    # draw.text((text_x, text_y), user_name, fill=(255, 255, 255), font=font)
-
-    # ==== Add Bold Username ====
     try:
+        # Try loading bold font (add fallback for different OS font paths)
         font = ImageFont.truetype("arialbd.ttf", size=60)
     except IOError:
-        font = ImageFont.load_default()
+        try:
+            font = ImageFont.truetype("arial.ttf", size=60)
+        except IOError:
+            font = ImageFont.load_default()
 
+    # Clean and prepare text
     text = user_name.strip()
+    
+    # Calculate text dimensions using bbox method
     bbox = draw.textbbox((0, 0), text, font=font)
     text_width = bbox[2] - bbox[0]
     text_height = bbox[3] - bbox[1]
-    text_x = (user_height - text_width) // 2
-    text_y = y2 + 30  # small padding below circle
-
-    # Optional black shadow
-    # draw.text((text_x + 2, text_y + 2), text, font=font, fill="black")
-    # Main white text
-    draw.text((text_x, text_y), text, font=font, fill="white")
-
+    
+    # Calculate centered position
+    text_x = (template_width - text_width) // 2  # Center horizontally relative to template
+    text_y = y2 + 30  # Fixed vertical offset from circle bottom
+    
+    # Add text with white color
+    draw.text((text_x, text_y), text, font=font, fill="white", stroke_width=2, stroke_fill="black")
 
     return final_image
+
+# def add_selfie_to_template(user_image, template_image, user_name):
+#     """Places the user's selfie inside the circular frame and adds the name."""
+    
+#     # Resize the user image before processing to reduce computation time
+#     max_size = 800
+#     if user_image.size[0] > max_size or user_image.size[1] > max_size:
+#         ratio = min(max_size / user_image.size[0], max_size / user_image.size[1])
+#         new_size = (int(user_image.size[0] * ratio), int(user_image.size[1] * ratio))
+#         user_image = user_image.resize(new_size, Image.Resampling.LANCZOS)
+    
+#     # Convert images to OpenCV format
+#     template_cv = cv2.cvtColor(np.array(template_image), cv2.COLOR_RGB2BGRA)
+#     user_cv = cv2.cvtColor(np.array(user_image), cv2.COLOR_RGB2BGRA)
+    
+#     # Get template dimensions
+#     template_height, template_width = template_cv.shape[:2]
+#     user_height, user_width = user_cv.shape[:2]
+    
+#     # Calculate the center position for the circle
+#     circle_x = template_width // 2  # Center horizontally
+#     circle_y = int(template_height * 0.77)  # Position at 70% from top
+#     circle_r = int(template_width * 0.17)  # Slightly smaller radius
+    
+#     # Calculate aspect ratio preserving dimensions for user image
+#     target_size = circle_r * 2
+#     if user_width > user_height:
+#         new_width = int(user_width * target_size / user_height)
+#         new_height = target_size
+#         x_offset = (new_width - target_size) // 2
+#         y_offset = 0
+#     else:
+#         new_width = target_size
+#         new_height = int(user_height * target_size / user_width)
+#         x_offset = 0
+#         y_offset = (new_height - target_size) // 2
+    
+#     # Use INTER_AREA for downscaling and INTER_LINEAR for upscaling
+#     interpolation = cv2.INTER_AREA if target_size < user_width else cv2.INTER_LINEAR
+#     user_resized = cv2.resize(user_cv, (new_width, new_height), interpolation=interpolation)
+    
+#     # Crop to square from center
+#     x_start = x_offset
+#     x_end = x_offset + target_size
+#     y_start = y_offset
+#     y_end = y_offset + target_size
+#     user_square = user_resized[y_start:y_end, x_start:x_end]
+    
+#     # Create a circular mask with anti-aliasing
+#     mask = np.zeros((target_size, target_size, 4), dtype=np.uint8)
+#     center = (target_size // 2, target_size // 2)
+#     cv2.circle(mask, center, circle_r - 2, (255, 255, 255, 255), -1)
+    
+#     # Optimize feathering
+#     feather_amount = 1
+#     mask = cv2.GaussianBlur(mask, (feather_amount*2+1, feather_amount*2+1), 0)
+    
+#     # Apply mask to create circular image
+#     alpha_mask = mask[:, :, 3] / 255.0
+#     alpha_mask = np.stack([alpha_mask] * 4, axis=-1)
+#     user_circular = user_square * alpha_mask
+    
+#     # Calculate position to place the circular image
+#     y1 = circle_y - circle_r
+#     y2 = circle_y + circle_r
+#     x1 = circle_x - circle_r
+#     x2 = circle_x + circle_r
+    
+#     # Create a region of interest and blend
+#     roi = template_cv[y1:y2, x1:x2].copy()
+#     template_cv[y1:y2, x1:x2] = user_circular + roi * (1 - alpha_mask)
+    
+#     # Convert back to PIL format
+#     final_image = Image.fromarray(cv2.cvtColor(template_cv, cv2.COLOR_BGRA2RGBA))
+    
+#     # Add user name with optimized font loading
+#     draw = ImageDraw.Draw(final_image)
+#     # try:
+#     #     font = ImageFont.truetype("arial.ttf", 80)
+#     # except:
+#     #     font = ImageFont.load_default()
+    
+#     # # Center align the text
+#     # text_width = draw.textlength(user_name, font=font)
+#     # text_x = text_width
+#     # text_y = y2 + 10
+    
+#     # # Add text with yellow color
+#     # draw.text((text_x, text_y), user_name, fill=(255, 255, 255), font=font)
+
+#     # ==== Add Bold Username ====
+#     try:
+#         font = ImageFont.truetype("arialbd.ttf", size=60)
+#     except IOError:
+#         font = ImageFont.load_default()
+
+#     text = user_name.strip()
+#     bbox = draw.textbbox((0, 0), text, font=font)
+#     text_width = bbox[2] - bbox[0]
+#     text_height = bbox[3] - bbox[1]
+#     text_x = (user_height - text_width) // 2
+#     text_y = y2 + 30
+
+#     draw.text((text_x, text_y), text, font=font, fill="white")
+
+
+#     return final_image
 
 @app.route('/')
 def index():
