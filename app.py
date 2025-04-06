@@ -501,35 +501,52 @@ def add_selfie_to_template(user_image, template_image, user_name):
         final_image = Image.fromarray(cv2.cvtColor(template_cv, cv2.COLOR_BGRA2RGBA))
         
         # ==== Add Centered Username ====
+        # Add user name with optimized font loading
         draw = ImageDraw.Draw(final_image)
         
-        try:
-            # Try loading bold font (add fallback for different OS font paths)
-            font = ImageFont.truetype("arialbd.ttf", size=80)
-            logger.debug("Loaded Arial Bold font")
-        except IOError:
+        # Calculate font size based on template width
+        font_size = int(template_width * 0.06)  # 6% of template width
+        min_font_size = 36
+        max_font_size = 72
+        font_size = max(min_font_size, min(font_size, max_font_size))
+        
+        # Try multiple font paths
+        font_paths = [
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",  # Linux
+            "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",  # Linux alternative
+            "arial.ttf",  # Windows
+            "/System/Library/Fonts/Helvetica.ttc",  # macOS
+            os.path.join(BASE_DIR, "static", "fonts", "Arial.ttf")  # Local fallback
+        ]
+        
+        font = None
+        for font_path in font_paths:
             try:
-                font = ImageFont.truetype("arial.ttf", size=80)
-                logger.debug("Loaded Arial font")
-            except IOError:
-                font = ImageFont.load_default()
-                logger.debug("Using default font")
-
-        # Clean and prepare text
-        text = user_name.strip()
+                font = ImageFont.truetype(font_path, font_size)
+                break
+            except Exception as e:
+                logger.warning(f"Failed to load font from {font_path}: {str(e)}")
+                continue
         
-        # Calculate text dimensions using bbox method
-        bbox = draw.textbbox((0, 0), text, font=font)
-        text_width = bbox[2] - bbox[0]
-        text_height = bbox[3] - bbox[1]
+        if font is None:
+            logger.warning("Using default font as no system fonts were found")
+            font = ImageFont.load_default()
         
-        # Calculate centered position
-        text_x = (template_width - text_width) // 2  # Center horizontally relative to template
-        text_y = y2 + 40  # Fixed vertical offset from circle bottom
+        # Center align the text
+        text_width = draw.textlength(user_name, font=font)
+        text_x = circle_x - text_width // 2
+        text_y = y2 + 20  # Increased spacing from circle
         
-        # Add text with white color
-        draw.text((text_x, text_y), text, font=font, fill="white")
-        logger.info(f"Successfully processed selfie for user: {user_name}")
+        # Add text with yellow color and black outline for better visibility
+        outline_color = (0, 0, 0, 255)  # Black outline
+        text_color = (255, 223, 0, 255)  # Yellow text
+        
+        # Draw text outline
+        for offset in [(1,1), (-1,-1), (1,-1), (-1,1)]:
+            draw.text((text_x + offset[0], text_y + offset[1]), user_name, fill=outline_color, font=font)
+        
+        # Draw main text
+        draw.text((text_x, text_y), user_name, fill=text_color, font=font)
         
         return final_image
     except Exception as e:
