@@ -505,11 +505,11 @@ def add_selfie_to_template(user_image, template_image, user_name):
         
         try:
             # Try loading bold font (add fallback for different OS font paths)
-            font = ImageFont.truetype("arialbd.ttf", size=60)
+            font = ImageFont.truetype("arialbd.ttf", size=80)
             logger.debug("Loaded Arial Bold font")
         except IOError:
             try:
-                font = ImageFont.truetype("arial.ttf", size=60)
+                font = ImageFont.truetype("arial.ttf", size=80)
                 logger.debug("Loaded Arial font")
             except IOError:
                 font = ImageFont.load_default()
@@ -525,10 +525,10 @@ def add_selfie_to_template(user_image, template_image, user_name):
         
         # Calculate centered position
         text_x = (template_width - text_width) // 2  # Center horizontally relative to template
-        text_y = y2 + 30  # Fixed vertical offset from circle bottom
+        text_y = y2 + 40  # Fixed vertical offset from circle bottom
         
         # Add text with white color
-        draw.text((text_x, text_y), text, font=font, fill="white", stroke_width=2, stroke_fill="black")
+        draw.text((text_x, text_y), text, font=font, fill="white")
         logger.info(f"Successfully processed selfie for user: {user_name}")
         
         return final_image
