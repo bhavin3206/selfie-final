@@ -25,13 +25,18 @@
   <!-- Main Content -->
   <div class="container">
     <!-- Tabs -->
-    <!-- <ul class="nav nav-tabs justify-content-center" role="tablist">
-      <li class="nav-item" role="presentation">
+    <ul class="nav nav-tabs" role="tablist">
+      <!-- <li class="nav-item" role="presentation">
         <button class="nav-link active" id="upload-tab" data-bs-toggle="tab" data-bs-target="#upload" type="button" role="tab">
           Upload Photo
         </button>
       </li>
-    </ul> -->
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="camera-tab" data-bs-toggle="tab" data-bs-target="#camera" type="button" role="tab">
+          Take Photo
+        </button>
+      </li> -->
+    </ul>
 
     <!-- Tab Content -->
     <div class="tab-content">
@@ -116,28 +121,20 @@
       </div>
     </div>
   </div>
-  <script>// Handle file input change for selecting a photo
-    document.getElementById('fileInput').addEventListener('change', function(event) {
-      var file = event.target.files[0];
-      if (file) {
-        var reader = new FileReader();
-        reader.onload = function(e) {
-          // Show the preview container and display the selected photo
-          document.getElementById('previewContainer').style.display = 'block';
-          document.getElementById('photoPreview').src = e.target.result;
-    
-          // Enable the process button after a photo is selected
-          document.getElementById('processBtn').disabled = false;
-        };
-        reader.readAsDataURL(file);
-      } else {
-        // Hide the preview container if no file is selected
-        document.getElementById('previewContainer').style.display = 'none';
-        document.getElementById('processBtn').disabled = true;
-      }
-    });
-    
-    </script>
+  <script>
+    function checkFormComplete() {
+  const nameInput = document.getElementById('nameInput').value.trim();
+  const fileInput = document.getElementById('fileInput').files[0];
+  
+  // Enable the button only if both conditions are met
+  document.getElementById('processBtn').disabled = !(nameInput && fileInput);
+}
+
+    document.getElementById('nameInput').addEventListener('input', function() {
+  checkFormComplete();
+});
+
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>

@@ -22,6 +22,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (file) {
             const reader = new FileReader();
             reader.onload = function(e) {
+                previewContainer.style.display = 'block';
+          
                 setupImagePreview(e.target.result);
             };
             reader.readAsDataURL(file);
@@ -29,48 +31,48 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Camera Handler
-    startCameraBtn.addEventListener('click', async function() {
-        try {
-            if (stream) {
-                stopCamera();
-                return;
-            }
+    // startCameraBtn.addEventListener('click', async function() {
+    //     try {
+    //         if (stream) {
+    //             stopCamera();
+    //             return;
+    //         }
 
-            stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            video.srcObject = stream;
-            video.style.display = 'block';
-            video.play();
-            startCameraBtn.textContent = 'Capture Photo';
-            startCameraBtn.classList.add('active');
-        } catch (err) {
-            console.error('Error accessing camera:', err);
-            alert('Unable to access camera. Please make sure you have granted camera permissions.');
-        }
-    });
+    //         stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    //         video.srcObject = stream;
+    //         video.style.display = 'block';
+    //         video.play();
+    //         startCameraBtn.textContent = 'Capture Photo';
+    //         startCameraBtn.classList.add('active');
+    //     } catch (err) {
+    //         console.error('Error accessing camera:', err);
+    //         alert('Unable to access camera. Please make sure you have granted camera permissions.');
+    //     }
+    // });
 
-    // Capture Photo
-    startCameraBtn.addEventListener('click', function() {
-        if (stream && video.style.display !== 'none') {
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            canvas.getContext('2d').drawImage(video, 0, 0);
+    // // Capture Photo
+    // startCameraBtn.addEventListener('click', function() {
+    //     if (stream && video.style.display !== 'none') {
+    //         canvas.width = video.videoWidth;
+    //         canvas.height = video.videoHeight;
+    //         canvas.getContext('2d').drawImage(video, 0, 0);
             
-            const imageData = canvas.toDataURL('image/png');
-            setupImagePreview(imageData);
-            stopCamera();
-        }
-    });
+    //         const imageData = canvas.toDataURL('image/png');
+    //         setupImagePreview(imageData);
+    //         stopCamera();
+    //     }
+    // });
 
-    // Stop Camera
-    function stopCamera() {
-        if (stream) {
-            stream.getTracks().forEach(track => track.stop());
-            stream = null;
-            video.style.display = 'none';
-            startCameraBtn.textContent = 'Start Camera';
-            startCameraBtn.classList.remove('active');
-        }
-    }
+    // // Stop Camera
+    // function stopCamera() {
+    //     if (stream) {
+    //         stream.getTracks().forEach(track => track.stop());
+    //         stream = null;
+    //         video.style.display = 'none';
+    //         startCameraBtn.textContent = 'Start Camera';
+    //         startCameraBtn.classList.remove('active');
+    //     }
+    // }
 
     // Setup Image Preview
     function setupImagePreview(imageUrl) {
