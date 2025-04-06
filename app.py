@@ -137,7 +137,7 @@ def add_selfie_to_template(user_image, template_image, user_name):
     
     # Center align the text
     text_width = draw.textlength(user_name, font=font)
-    text_x = circle_x - text_width // 2
+    text_x = text_width
     text_y = y2 + 10
     
     # Add text with yellow color
