@@ -522,7 +522,7 @@ def add_selfie_to_template(user_image, template_image, user_name):
         font = None
         for font_path in font_paths:
             try:
-                font = ImageFont.truetype(font_path, font_size)
+                font = ImageFont.truetype(font_path, 40)
                 break
             except Exception as e:
                 logger.warning(f"Failed to load font from {font_path}: {str(e)}")
