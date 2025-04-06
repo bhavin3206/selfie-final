@@ -121,7 +121,30 @@
       </div>
     </div>
   </div>
-
+  <script>// Handle file input change for selecting a photo
+    document.getElementById('fileInput').addEventListener('change', function(event) {
+      var file = event.target.files[0];
+      if (file) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          // Show the preview container and display the selected photo
+          document.getElementById('previewContainer').style.display = 'block';
+          document.getElementById('photoPreview').src = e.target.result;
+    
+          // Enable the process button after a photo is selected
+          document.getElementById('processBtn').disabled = false;
+        };
+        reader.readAsDataURL(file);
+      } else {
+        // Hide the preview container if no file is selected
+        document.getElementById('previewContainer').style.display = 'none';
+        document.getElementById('processBtn').disabled = true;
+      }
+    });
+    
+    // (Optional) Handle camera input if you're implementing the camera functionality
+    // Make sure to set up the camera and capture the image properly
+    </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
