@@ -131,7 +131,7 @@ def add_selfie_to_template(user_image, template_image, user_name):
     # Add user name with optimized font loading
     draw = ImageDraw.Draw(final_image)
     try:
-        font = ImageFont.truetype("arial.ttf", 48)
+        font = ImageFont.truetype("arial.ttf", 120)
     except:
         font = ImageFont.load_default()
     
@@ -141,7 +141,7 @@ def add_selfie_to_template(user_image, template_image, user_name):
     text_y = y2 + 10
     
     # Add text with yellow color
-    draw.text((text_x, text_y), user_name, fill=(255, 223, 0), font=font)
+    draw.text((text_x, text_y), user_name, fill=(255, 255, 255), font=font)
     
     return final_image
 
