@@ -25,6 +25,7 @@ ORIGINAL_FOLDER = os.path.join(UPLOAD_FOLDER, 'original')
 PROCESSED_FOLDER = os.path.join(UPLOAD_FOLDER, 'processed')
 RECENT_IMAGES_FILE = os.path.join(BASE_DIR, 'static', 'recent_images.json')
 
+
 # Create directories if they don't exist
 for folder in [UPLOAD_FOLDER, ORIGINAL_FOLDER, PROCESSED_FOLDER]:
     os.makedirs(folder, exist_ok=True)
