@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="Create custom images with your photo in a template" />
+  <title>Patel samaj Dhebar - Selfie Generator</title>
+  <!-- Add Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+<body>
+  <!-- Header -->
+  <header class="text-center">
+    <div class="container">
+      <h1 class="main-title">Patel Samaj Dhebar</h1>
+      <p class="lead">Create your personalized selfie with our template</p>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="container">
+    <!-- Tabs -->
+    <ul class="nav nav-tabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="upload-tab" data-bs-toggle="tab" data-bs-target="#upload" type="button" role="tab">
+          Upload Photo
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="camera-tab" data-bs-toggle="tab" data-bs-target="#camera" type="button" role="tab">
+          Take Photo
+        </button>
+      </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+      <!-- Upload Photo Tab -->
+      <div class="tab-pane fade show active" id="upload" role="tabpanel">
+        <div class="upload-section">
+          <button class="btn-choose-photo" onclick="document.getElementById('fileInput').click()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-upload" viewBox="0 0 16 16">
+              <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+              <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
+            </svg>
+            Choose Photo
+          </button>
+          <input type="file" id="fileInput" accept="image/*" style="display: none;">
+          <p class="upload-text">Select a photo from your device</p>
+        </div>
+      </div>
+
+      <!-- Camera Tab -->
+      <div class="tab-pane fade" id="camera" role="tabpanel">
+        <div class="upload-section">
+          <video id="video" style="display: none;"></video>
+          <canvas id="canvas" style="display: none;"></canvas>
+          <button id="startCamera" class="btn-choose-photo">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-camera" viewBox="0 0 16 16">
+              <path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1v6zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2z"/>
+              <path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zm0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z"/>
+            </svg>
+            Start Camera
+          </button>
+        </div>
+      </div>
+
+      <!-- Preview Section -->
+      <div id="previewContainer" class="mt-3"></div>
+
+      <!-- Name Input -->
+      <div class="form-group text-center mb-3">
+        <input type="text" id="nameInput" class="form-control" placeholder="Enter your name">
+      </div>
+
+      <!-- Process Button -->
+      <div class="text-center mb-4">
+        <button id="processBtn" class="btn btn-primary" disabled>
+          Create Template
+        </button>
+      </div>
+    </div>
+
+    <!-- Recent Images Section -->
+    <div class="recent-images-section">
+      <h4 class="mb-3">Recent Selfies</h4>
+      <div class="recent-images">
+        {% for image in recent_images %}
+        <div class="recent-image-card">
+          <img src="{{ url_for('static', filename=image.path) }}" alt="Processed selfie">
+          <div class="recent-image-info">
+            <h6 title="{{ image.name }}">{{ image.name }}</h6>
+            <small>{{ image.timestamp }}</small>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div class="modal fade" id="successModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Your Selfie is Ready!</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div id="modalPreviewContainer"></div>
+          <div class="text-center mt-3">
+            <button id="modalDownloadBtn" class="btn btn-primary me-2">Download</button>
+            <button id="modalShareBtn" class="btn btn-outline-primary">Share</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="50" viewBox="0 0 200 50" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .text { font-family: Arial, sans-serif; font-weight: bold; }
+    .ultra { fill: #4a90e2; }
+    .guide { fill: #2c3e50; }
+    .tech { fill: #27ae60; }
+  </style>
+  <text x="10" y="35" class="text ultra">ULTRA</text>
+  <text x="70" y="35" class="text guide">GUIDE</text>
+  <text x="130" y="35" class="text tech">TECH</text>
+</svg> 
