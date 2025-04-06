@@ -218,7 +218,7 @@ def process_image():
             })
         
         # Save to recent images with processed path only
-        save_recent_image(processed_filepath, user_name)
+        save_recent_image(f'uploads/processed/{processed_filename}', user_name)
         
         # Convert to base64 for sending back to client
         img_io = io.BytesIO()
