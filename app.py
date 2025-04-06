@@ -356,18 +356,18 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 app.wsgi_app = RequestIDMiddleware(app.wsgi_app)
 
 # Log each request
-@app.before_request
-def log_request_info():
-    logger.info(f"Request: {request.method} {request.path} - IP: {request.remote_addr}")
-    if request.get_data():
-        content_length = request.headers.get('Content-Length', 0)
-        logger.debug(f"Request data size: {content_length} bytes")
+# @app.before_request
+# def log_request_info():
+#     logger.info(f"Request: {request.method} {request.path} - IP: {request.remote_addr}")
+#     if request.get_data():
+#         content_length = request.headers.get('Content-Length', 0)
+#         logger.debug(f"Request data size: {content_length} bytes")
 
 # Log each response
-@app.after_request
-def log_response_info(response):
-    logger.info(f"Response: {response.status_code}")
-    return response
+# @app.after_request
+# def log_response_info(response):
+#     logger.info(f"Response: {response.status_code}")
+#     return response
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
