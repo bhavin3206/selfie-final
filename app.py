@@ -131,18 +131,29 @@ def add_selfie_to_template(user_image, template_image, user_name):
     # Add user name with optimized font loading
     draw = ImageDraw.Draw(final_image)
     try:
-        font = ImageFont.truetype("arial.ttf", 120)
+        font = ImageFont.truetype("arial.ttf", 80)
     except:
         font = ImageFont.load_default()
     
-    # Center align the text
-    text_width = draw.textlength(user_name, font=font)
-    text_x = text_width
-    text_y = y2 + 10
+    # # Center align the text
+    # text_width = draw.textlength(user_name, font=font)
+    # text_x = text_width
+    # text_y = y2 + 10
     
-    # Add text with yellow color
-    draw.text((text_x, text_y), user_name, fill=(255, 255, 255), font=font)
+    # # Add text with yellow color
+    # draw.text((text_x, text_y), user_name, fill=(255, 255, 255), font=font)
+    # Measure text size
+    text = user_name
+    text_width, text_height = draw.textsize(text, font=font)
     
+    # Calculate x, y to center it
+    image_width, image_height = final_image.size
+    x = (image_width - text_width) // 2
+    y = int(image_height * 0.9) - text_height // 2  # Place near bottom
+
+    # Add white text
+    draw.text((x, y), text, font=font, fill="white")
+
     return final_image
 
 @app.route('/')
