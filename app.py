@@ -618,16 +618,17 @@ def process_image():
             result.save(processed_filepath, 'PNG')
             logger.debug(f"Saved processed image to: {processed_filepath}")
         except Exception as e:
-            # Clean up original image if processing fails
-            if os.path.exists(original_filepath):
-                os.remove(original_filepath)
-                logger.debug(f"Cleaned up original image after processing error")
             logger.error(f"Error processing image: {str(e)}")
             logger.debug(traceback.format_exc())
             return jsonify({
                 'success': False,
                 'error': 'Error processing image'
             })
+        finally:
+            if os.path.exists(original_filepath):
+                os.remove(original_filepath)
+                logger.debug(f"Cleaned up original image after processing error")
+
         
         # Save to recent images with processed path only
         save_recent_image(f'uploads/processed/{processed_filename}', user_name)
@@ -644,6 +645,7 @@ def process_image():
             'image': f'data:image/png;base64,{img_str}',
             'selfie_count': get_selfie_count()
         })
+    
     except Exception as e:
         logger.error(f"Unhandled exception in process_image: {str(e)}")
         logger.debug(traceback.format_exc())
