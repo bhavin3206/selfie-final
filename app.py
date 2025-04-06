@@ -16,11 +16,14 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
+
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
 # Create necessary directories
-UPLOAD_FOLDER = os.path.join('static', 'uploads')
+UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
 ORIGINAL_FOLDER = os.path.join(UPLOAD_FOLDER, 'original')
 PROCESSED_FOLDER = os.path.join(UPLOAD_FOLDER, 'processed')
-RECENT_IMAGES_FILE = os.path.join('static', 'recent_images.json')
+RECENT_IMAGES_FILE = os.path.join(BASE_DIR, 'static', 'recent_images.json')
 
 # Create directories if they don't exist
 for folder in [UPLOAD_FOLDER, ORIGINAL_FOLDER, PROCESSED_FOLDER]:
@@ -178,7 +181,7 @@ def process_image():
             })
         
         # Load template image
-        template_path = "static/images/template.png"
+        template_path = os.path.join(BASE_DIR, "static", "images", "template.png")
         if not os.path.exists(template_path):
             return jsonify({
                 'success': False,
@@ -215,7 +218,7 @@ def process_image():
             })
         
         # Save to recent images with processed path only
-        save_recent_image(f'uploads/processed/{processed_filename}', user_name)
+        save_recent_image(processed_filepath, user_name)
         
         # Convert to base64 for sending back to client
         img_io = io.BytesIO()
