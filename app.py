@@ -130,10 +130,10 @@ def add_selfie_to_template(user_image, template_image, user_name):
     
     # Add user name with optimized font loading
     draw = ImageDraw.Draw(final_image)
-    try:
-        font = ImageFont.truetype("arial.ttf", 80)
-    except:
-        font = ImageFont.load_default()
+    # try:
+    #     font = ImageFont.truetype("arial.ttf", 80)
+    # except:
+    #     font = ImageFont.load_default()
     
     # # Center align the text
     # text_width = draw.textlength(user_name, font=font)
@@ -143,20 +143,23 @@ def add_selfie_to_template(user_image, template_image, user_name):
     # # Add text with yellow color
     # draw.text((text_x, text_y), user_name, fill=(255, 255, 255), font=font)
 
-    text = user_name.strip()
+    # ==== Add Bold Username ====
+    try:
+        font = ImageFont.truetype("arialbd.ttf", size=60)
+    except IOError:
+        font = ImageFont.load_default()
 
-    # Measure text size using textbbox for precise layout
+    text = user_name.strip()
     bbox = draw.textbbox((0, 0), text, font=font)
     text_width = bbox[2] - bbox[0]
     text_height = bbox[3] - bbox[1]
+    text_x = (user_height - text_width) // 2
+    text_y = y2 + 30  # small padding below circle
 
-    # Center horizontally and align near bottom
-    image_width, image_height = final_image.size
-    x = (image_width - text_width) // 2
-    y = image_height - text_height - 80  # 80px padding from bottom
-
-    # Draw the white name text
-    draw.text((x, y), text, font=font, fill="white")
+    # Optional black shadow
+    # draw.text((text_x + 2, text_y + 2), text, font=font, fill="black")
+    # Main white text
+    draw.text((text_x, text_y), text, font=font, fill="white")
 
 
     return final_image
