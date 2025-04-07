@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Photo Overlay Editor</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+      background: #1c2a44;
+      color: white;
+    }
+
+    #photoInput {
+      margin: 20px auto;
+      display: block;
+    }
+
+    #container {
+      display: none;
+      position: relative;
+      max-width: 50%;
+      width: 100%;
+      aspect-ratio: 768 / 1365;
+      margin: auto;
+      background: #000;
+      overflow: hidden;
+    }
+
+    #templateImg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    #circleMask {
+      position: absolute;
+      width: 31.50%;
+      aspect-ratio: 1 / 1;
+      top: 68.1%;
+      left: 34.5%;
+      overflow: hidden;
+      border-radius: 50%;
+      z-index: 2;
+      touch-action: none;
+    }
+
+    #userImage {
+      position: absolute;
+      width: 100%;
+      height: auto;
+      transform-origin: center;
+      cursor: grab;
+      z-index: 3;
+      user-select: none;
+      will-change: transform;
+    }
+
+    #userName {
+        position: absolute;
+        bottom: 10%;
+        width: 100%;
+        text-align: center;
+        color: #d4a017;
+        font-size: 24px;
+        font-weight: bold;
+        z-index: 4;
+        pointer-events: none;
+        user-select: none;
+        text-shadow: 1px 1px 2px #00000080;
+      }
+
+
+    #downloadBtn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      border: none;
+      background-color: #f39c12;
+      color: white;
+      cursor: pointer;
+      border-radius: 5px;
+      display: none;
+    }
+    #loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  font-size: 18px;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #d4a017;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 10px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+    @media screen and (max-width: 768px) {
+      #container {
+        height: auto;
+        width: 100%;
+        max-width: 100%;
+      }
+
+      #userName{
+        font-size: 16px;
+        bottom: 9%;
+      }
+
+      #circleMask {
+        top: 68.09%;
+        left: 34.45%;
+      }
+      
+    }
+  </style>
+</head>
+<body>
+  <h1>Upload Your Photo</h1>
+  <input type="file" id="photoInput" accept="image/*"/>
+  <input type="text" id="userNameInput" placeholder="Enter your name" />
+
+  <div id="container">
+    <img id="templateImg" src="{{ url_for('static', filename='images/template.png') }}" alt="Template" />
+    <div id="circleMask">
+      <img id="userImage" alt="User Image" style="cursor: grab; transform: translate(-86.5839px, -21.2486px) scale(1.2);" />
+    </div>
+    <div id="userName"></div> 
+  </div>
+  <button id="downloadBtn">Download</button>
+  <div id="loader" style="display:none;">
+    <div class="spinner"></div>
+    <p>Generating image...</p>
+  </div>
+  
+
+  <canvas id="finalCanvas" width="768" height="1365" style="display: none;"></canvas>
+
+  <script>
+    const photoInput = document.getElementById("photoInput");
+    const userImage = document.getElementById("userImage");
+    const container = document.getElementById("container");
+    const downloadBtn = document.getElementById("downloadBtn");
+    const circleMask = document.getElementById("circleMask");
+    const templateImg = document.getElementById("templateImg");
+
+    let isDragging = false;
+    let startX = 0, startY = 0;
+    let translateX = 0, translateY = 0;
+    let scale = 1;
+    let userImageNaturalWidth = 0;
+    let userImageNaturalHeight = 0;
+
+    photoInput.addEventListener("change", (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const tempImg = new Image();
+          tempImg.onload = () => {
+            userImageNaturalWidth = tempImg.naturalWidth;
+            userImageNaturalHeight = tempImg.naturalHeight;
+
+            const circleMaskWidth = circleMask.offsetWidth;
+            const circleMaskHeight = circleMask.offsetHeight;
+            const aspectRatio = userImageNaturalWidth / userImageNaturalHeight;
+
+            translateX = -87.6455;
+            translateY = 4.06193;
+            scale = 1.2;
+
+            updateTransform();
+          };
+          tempImg.src = e.target.result;
+          userImage.src = e.target.result;
+
+          userImage.onload = () => {
+            container.style.display = "block";
+            downloadBtn.style.display = "inline-block";
+          };
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    function updateTransform() {
+      userImage.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+    }
+
+    userImage.addEventListener("mousedown", (e) => {
+      e.preventDefault();
+      isDragging = true;
+      startX = e.clientX - translateX;
+      startY = e.clientY - translateY;
+      userImage.style.cursor = "grabbing";
+    });
+
+    document.addEventListener("mouseup", () => {
+      isDragging = false;
+      userImage.style.cursor = "grab";
+    });
+
+    document.addEventListener("mousemove", (e) => {
+      if (!isDragging) return;
+      translateX = e.clientX - startX;
+      translateY = e.clientY - startY;
+      updateTransform();
+    });
+
+    userImage.addEventListener("touchstart", (e) => {
+      if (e.touches.length === 1) {
+        e.preventDefault();
+        isDragging = true;
+        const touch = e.touches[0];
+        startX = touch.clientX - translateX;
+        startY = touch.clientY - translateY;
+      }
+    });
+    const userNameInput = document.getElementById("userNameInput");
+    const userNameDisplay = document.getElementById("userName");
+
+    userNameInput.addEventListener("input", () => {
+      userNameDisplay.textContent = userNameInput.value;
+    });
+
+    document.addEventListener("touchend", () => {
+      isDragging = false;
+    });
+
+    document.addEventListener("touchmove", (e) => {
+      if (isDragging && e.touches.length === 1) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        translateX = touch.clientX - startX;
+        translateY = touch.clientY - startY;
+        updateTransform();
+      }
+    });
+
+    circleMask.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      const mousePosX = e.clientX - circleMask.getBoundingClientRect().left;
+      const mousePosY = e.clientY - circleMask.getBoundingClientRect().top;
+
+      const oldScale = scale;
+      scale += e.deltaY < 0 ? 0.1 : -0.1;
+      scale = Math.max(0.5, Math.min(5, scale));
+
+      const scaleChange = scale / oldScale;
+      translateX = mousePosX - (mousePosX - translateX) * scaleChange;
+      translateY = mousePosY - (mousePosY - translateY) * scaleChange;
+
+      updateTransform();
+    });
+
+    let initialDistance = 0;
+    let initialScale = 1;
+
+    circleMask.addEventListener("touchstart", (e) => {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        initialDistance = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        initialScale = scale;
+      }
+    });
+
+    circleMask.addEventListener("touchmove", (e) => {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        const currentDistance = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+
+        const pinchRatio = currentDistance / initialDistance;
+        const oldScale = scale;
+        scale = Math.min(Math.max(initialScale * pinchRatio, 0.5), 5);
+
+        const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2 - circleMask.getBoundingClientRect().left;
+        const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2 - circleMask.getBoundingClientRect().top;
+
+        const scaleChange = scale / oldScale;
+        translateX = centerX - (centerX - translateX) * scaleChange;
+        translateY = centerY - (centerY - translateY) * scaleChange;
+
+        updateTransform();
+      }
+    });
+
+
+    downloadBtn.addEventListener("click", () => {
+          const loader = document.getElementById("loader");
+          loader.style.display = "flex"; // Show loader
+
+          const containerClone = container.cloneNode(true);
+          document.body.appendChild(containerClone);
+
+          containerClone.style.position = "absolute";
+          containerClone.style.display = "block";
+          containerClone.style.left = "-9999px"; // hide off-screen to not affect layout
+          containerClone.style.top = "0";
+
+          // Get current size of the container (which is responsive)
+          const containerRect = container.getBoundingClientRect();
+          const containerWidth = containerRect.width;
+          const containerHeight = containerRect.height;
+
+          containerClone.style.width = `${containerWidth}px`;
+          containerClone.style.height = `${containerHeight}px`;
+          containerClone.style.aspectRatio = "unset";
+          containerClone.style.maxWidth = "unset";
+
+          // Copy style from the original user image
+          const originalUserImage = document.getElementById("userImage");
+          const originalStyle = originalUserImage.getAttribute("style");
+          const cloneUserImage = containerClone.querySelector("#userImage");
+
+          cloneUserImage.setAttribute("src", originalUserImage.src);
+          cloneUserImage.setAttribute("style", originalStyle); // including transform
+
+          cloneUserImage.onload = () => {
+            html2canvas(containerClone, {
+              width: containerWidth,
+              height: containerHeight,
+              scale: 5,
+              allowTaint: true,
+              useCORS: true
+            }).then(canvas => {
+              const dataURL = canvas.toDataURL("image/png");
+              const link = document.createElement("a");
+              link.download = new Date().toISOString().replace(/[^\w]/g, "") + "_final-image.png";
+              link.href = dataURL;
+              link.click();
+
+              document.body.removeChild(containerClone);
+              loader.style.display = "none"; // Hide loader
+
+            });
+          };
+        });
+
+</script>
+  <script>
+    function updateTransform() {
+        const maskWidth = circleMask.offsetWidth;
+        const maskHeight = circleMask.offsetHeight;
+
+        userImage.dataset.translateXPct = translateX / maskWidth;
+        userImage.dataset.translateYPct = translateY / maskHeight;
+        userImage.dataset.scale = scale;
+
+        userImage.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+      }
+
+      window.addEventListener("resize", () => {
+        const maskWidth = circleMask.offsetWidth;
+        const maskHeight = circleMask.offsetHeight;
+
+        const pctX = parseFloat(userImage.dataset.translateXPct || 0);
+        const pctY = parseFloat(userImage.dataset.translateYPct || 0);
+        const storedScale = parseFloat(userImage.dataset.scale || 1);
+
+        translateX = pctX * maskWidth;
+        translateY = pctY * maskHeight;
+        scale = storedScale;
+
+        userImage.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+      });
+
+      userImage.dataset.translateXPct = 0;
+      userImage.dataset.translateYPct = 0;
+      userImage.dataset.scale = 1;
+
+
+  </script>
+
+  
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+</body>
+</html>

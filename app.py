@@ -554,13 +554,24 @@ def add_selfie_to_template(user_image, template_image, user_name):
         logger.debug(traceback.format_exc())
         raise
 
-@app.route('/')
+@app.route('/back')
 def index():
     try:
         logger.info("Loading index page")
         selfie_count = get_selfie_count()
         recent_images = load_recent_images()
         return render_template('index.html', selfie_count=selfie_count, recent_images=recent_images)
+    except Exception as e:
+        logger.error(f"Error loading index page: {str(e)}")
+        logger.debug(traceback.format_exc())
+        return "An error occurred loading the page. Please check the logs.", 500
+
+
+@app.route('/')
+def index():
+    try:
+        logger.info("Loading index page")
+        return render_template('new.html')
     except Exception as e:
         logger.error(f"Error loading index page: {str(e)}")
         logger.debug(traceback.format_exc())
