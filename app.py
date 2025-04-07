@@ -555,7 +555,7 @@ def add_selfie_to_template(user_image, template_image, user_name):
         raise
 
 @app.route('/back')
-def index():
+def old_index():
     try:
         logger.info("Loading index page")
         selfie_count = get_selfie_count()
