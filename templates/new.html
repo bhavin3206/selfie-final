@@ -226,12 +226,13 @@
 
   <canvas id="finalCanvas" width="768" height="1365" style="display: none;"></canvas>
 <script>
-  document.getElementById('qualityRange').oninput = function() {
-  document.getElementById('qualityValue').textContent = this.value;
-};
 
 </script>
-  <script>
+<script>
+
+    document.getElementById('qualityRange').oninput = function() {
+      document.getElementById('qualityValue').textContent = this.value;
+    };
     const photoInput = document.getElementById("photoInput");
     const userImage = document.getElementById("userImage");
     const container = document.getElementById("container");
@@ -420,7 +421,7 @@
             html2canvas(containerClone, {
               width: containerWidth,
               height: containerHeight,
-              scale: 5,
+              scale: parseInt(document.getElementById('qualityValue').textContent),
               allowTaint: true,
               useCORS: true
             }).then(canvas => {
